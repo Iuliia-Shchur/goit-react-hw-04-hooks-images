@@ -13,34 +13,31 @@ function App() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [images, setImages] = useState([]);
-  //  const [error, setError] = useState(null);
-  //  const [status, setStatus] = useState("idle");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!query) {
-      return;
-    }
+    if (!query) return;
     setLoading(true);
-    function fetchImages() {
-      fetchImagesApi(query, page)
-        .then(
-          (images) => setImages((prev) => [...prev, ...images]),
-          setPage((prev) => prev + 1)
-        )
-        .finally(() => setLoading(false));
-    }
+    const fetchImages = async () => {
+      try {
+        const data = await fetchImagesApi(query, page);
+        setImages((images) => [...images, ...data]);
+        if (page !== 1) {
+          scrollWindow();
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchImages();
   }, [page, query]);
 
-  const loadMore = (fetchImages) => {
-    setLoading(true);
-    fetchImages()
-      .then(() => {
-        scrollWindow();
-      })
-      .catch((err) => console.log(err))
-      .finally(() => setLoading(false));
+  const loadMore = () => {
+    setLoading(!loading);
+    setPage((prev) => prev + 1);
+    setLoading(loading);
   };
 
   const scrollWindow = () => {
